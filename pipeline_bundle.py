@@ -185,7 +185,7 @@ def run():
 
   argv = [
     '--project={0}'.format(project),
-    '--job_name=cooljob',
+    '--job_name=cooljobbundled',
     '--save_main_session',
     '--staging_location=gs://{0}/{1}/staging/'.format(bucket, folder),
     '--temp_location=gs://{0}/{1}/staging/'.format(bucket, folder),
