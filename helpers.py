@@ -75,7 +75,7 @@ def resolve_package_help_score(record, keyword):
 
          count += 1
 
-     packages = (resolve_packages(package_name, keyword))
+     packages = (__resolve_packages(package_name, keyword))
 
      for package in packages:
 
