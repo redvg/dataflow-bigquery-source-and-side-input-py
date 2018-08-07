@@ -1,9 +1,3 @@
-def find_matching_lines(line, keyword):
-
-   if line.startswith(keyword):
-
-      yield line
-
 def split_package_name(package_name):
 
    result = []
@@ -49,3 +43,41 @@ def compare_by_value(kv1, kv2):
    key2, value2 = kv2
 
    return value1 < value2
+
+def resolve_package_help_score(record, keyword):
+
+   count = 0
+
+   package_name = ''
+
+   if record is not None:
+
+     lines = record.split('\n')
+
+     for each in lines:
+
+       if each.startswith(keyword):
+
+         package_name = each
+
+       if 'FIXME' in line or 'TODO' in line:
+
+         count += 1
+
+     packages = (resolve_packages(package_name, keyword))
+
+     for package in packages:
+
+         yield (package, count)
+
+def calculate_composite_score(popular, help):
+
+    for element in popular:
+
+      if help.get(element[0]):
+
+         composite = math.log(help.get(element[0])) * math.log(element[1])
+
+         if composite > 0:
+
+           yield (element[0], composite)
