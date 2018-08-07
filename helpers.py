@@ -1,7 +1,7 @@
 import math
 
 
-def split_package_name(package_name):
+def __split_package_name(package_name):
 
    result = []
 
@@ -17,7 +17,7 @@ def split_package_name(package_name):
 
    return result
 
-def resolve_packages(line, keyword):
+def __resolve_packages(line, keyword):
 
    start = line.find(keyword) + len(keyword)
 
@@ -27,7 +27,7 @@ def resolve_packages(line, keyword):
 
       package_name = line[start:end].strip()
 
-      return split_package_name(package_name)
+      return __split_package_name(package_name)
 
    return []
 
@@ -41,7 +41,7 @@ def resolve_package_usage(record, keyword):
 
           if line.startswith(keyword):
                 
-                packages = resolve_packages(line, keyword)
+                packages = __resolve_packages(line, keyword)
 
                 for each in packages:
                       
