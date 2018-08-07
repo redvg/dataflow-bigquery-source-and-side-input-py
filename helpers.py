@@ -41,9 +41,9 @@ def resolve_package_usage(line, keyword):
 
 def compare_by_value(kv1, kv2):
 
-   key1, value1 = kv1
+   _, value1 = kv1
 
-   key2, value2 = kv2
+   _, value2 = kv2
 
    return value1 < value2
 
@@ -63,7 +63,7 @@ def resolve_package_help_score(record, keyword):
 
          package_name = each
 
-       if 'FIXME' in line or 'TODO' in line:
+       if each in ['FIXME', 'TODO']:
 
          count += 1
 
