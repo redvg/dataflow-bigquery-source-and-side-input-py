@@ -2,12 +2,58 @@ import argparse
 import logging
 import datetime, os
 import apache_beam as beam
-import helpers
+from helpers import *
 
 PROJECT_ID = 'udemy-data-engineer-210920'
 BUCKET_ID = 'udemy-data-engineer-210920'
 BUCKET_FOLDER = 'dataflow-pipeline-py'
 
+TOP_N = 5
+
+def create_popularity_view(pcollection):
+      
+    return (
+      pcollection
+        | 'PackageUsage' >> beam.FlatMap(lambda rowdict: resolve_package_usage(rowdict['content'], 'import'))
+        | 'TotalPackageUsage' >> beam.CombinePerKey(sum)
+        | 'TopNPackageUsage' >> beam.transforms.combiners.Top.Of(TOP_N, compare_by_value)
+      )
+
+def create_help_view(pcollection):
+     
+    return (
+      pcollection
+        | 'PackageHelpScore' >> beam.FlatMap(lambda rowdict: resolve_package_help_score(rowdict['content'], 'package'))
+        | 'TotalPackageHelpScore' >> beam.CombinePerKey(sum)
+        | 'RemoveZeros' >> beam.Filter(lambda packages: packages[1]>0 )
+      )
+
+def create_pipeline(argv, runner, project, bucket, folder):
+      
+  limit_records=''
+  if runner == 'DirectRunner':
+      limit_records='LIMIT 3000'
+
+  source_query = 'SELECT content FROM [fh-bigquery:github_extracts.contents_java_2016] {0}'.format(limit_records)
+
+  pipeline = beam.Pipeline(argv=argv)
+
+  source = pipeline | 'Source' >> beam.io.Read(beam.io.BigQuerySource(project=project,
+                                                                      query=source_query))
+
+  popularity_view = create_popularity_view(source)
+
+  help_view = create_help_view(source)
+
+  combined = popularity_view | 'Scores' >> beam.FlatMap(lambda element, the_dict: calculate_composite_score(element, the_dict), beam.pvalue.AsDict(help_view))
+  
+  output_prefix = 'gs://{0}/{1}/output'.format(BUCKET_ID, BUCKET_FOLDER)
+  
+  combined | 'Sink' >> beam.io.WriteToText(output_prefix,
+                                           file_name_suffix='.csv',
+                                           shard_name_template='')
+
+  return pipeline
 
 def run():
 
@@ -22,7 +68,7 @@ def run():
                       default=PROJECT_ID,
                       help='Specify Google Cloud project')
 
-  group = parser.add_mutually_exclusive_group(required=True)
+  group = parser.add_mutually_exclusive_group(required=False)
   group.add_argument('--local',
                      action='store_true')
   group.add_argument('--dataflow',
@@ -32,56 +78,33 @@ def run():
 
   if opts.local:
     runner='DirectRunner'
-  elif opts.dataflow:
+  else:
     runner='DataFlowRunner'
 
-  assert runner, 'Unknown runner'
-
   bucket = opts.bucket
+  folder = opts.folder
   project = opts.project
-
-  #    Limit records if running local, or full data if running on the cloud
-  limit_records=''
-  if runner == 'DirectRunner':
-     limit_records='LIMIT 3000'
-
-  get_java_query='SELECT content FROM [fh-bigquery:github_extracts.contents_java_2016] {0}'.format(limit_records)
 
   argv = [
     '--project={0}'.format(project),
     '--job_name=cooljob',
     '--save_main_session',
-    '--staging_location=gs://{0}/staging/'.format(bucket),
-    '--temp_location=gs://{0}/staging/'.format(bucket),
+    '--staging_location=gs://{0}/{1}/staging/'.format(bucket, folder),
+    '--temp_location=gs://{0}/{1}/staging/'.format(bucket, folder),
     '--runner={0}'.format(runner)
     ]
 
-  p = beam.Pipeline(argv=argv)
-
-
-  # Read the table rows into a PCollection (a Python Dictionary)
-  bigqcollection = p | 'ReadFromBQ' >> beam.io.Read(beam.io.BigQuerySource(project=project,query=get_java_query))
-
-  popular_packages = is_popular(bigqcollection) # main input
-
-  help_packages = needs_help(bigqcollection) # side input
-
-  # Use side inputs to view the help_packages as a dictionary
-  results = popular_packages | 'Scores' >> beam.FlatMap(lambda element, the_dict: compositeScore(element,the_dict), beam.pvalue.AsDict(help_packages))
-
-  # Write out the composite scores and packages to an unsharded csv file
-  output_results = 'gs://{0}/javahelp/Results'.format(bucket)
-  results | 'WriteToStorage' >> beam.io.WriteToText(output_results,file_name_suffix='.csv',shard_name_template='')
-
-  # Run the pipeline (all operations are deferred until run() is called).
-
+  pipeline = create_pipeline(argv, runner, project, bucket, folder)
 
   if runner == 'DataFlowRunner':
-     p.run()
+        pipeline.run()
   else:
-        p.run().wait_until_finish()
+        pipeline.run().wait_until_finish()
+  
   logging.getLogger().setLevel(logging.INFO)
 
 
 if __name__ == '__main__':
+      
       run()
+
