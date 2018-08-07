@@ -23,4 +23,13 @@ hence DAG is splitted by calculating help score & usage separately \
 DAG is then merged by calculating composite score from the above views \
 sinks to cloud storage \
 
+## DAG
+
 ![Screenshot](DAG.png)
+
+
+## Note on scaling
+autoscaling will try to increase workers to 11, if you have default quota it will fail, though will proceed with what it has \
+Autoscaling: Unable to reach resize target in zone us-central1-b. QUOTA_EXCEEDED: Quota 'CPUS' exceeded.  Limit: 8.0 in region us-central1. 
+
+![Screenshot](scaling.png)
