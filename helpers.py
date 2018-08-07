@@ -1,3 +1,6 @@
+import math
+
+
 def split_package_name(package_name):
 
    result = []
