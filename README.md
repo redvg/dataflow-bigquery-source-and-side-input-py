@@ -5,8 +5,6 @@ as per https://codelabs.developers.google.com/codelabs/cpb101-bigquery-dataflow-
 and per https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master/courses/data_analysis/lab2/python/JavaProjectsThatNeedHelp.py \
 and per https://www.udemy.com/gcp-data-engineer-and-cloud-architect/learn/v4/t/lecture/7598626?start=0 \
 \
-\
-
 
 ### helpers.py
 `resolve_package_help_score()` assigns +1 if `fixme` or `todo` is found \
@@ -23,4 +21,6 @@ beam transformations are then applied to those pcollections separately
 `create_help_view()` resolves help score with `resolve_package_help_score()` \
 hence DAG is splitted by calculating help score & usage separately \
 DAG is then merged by calculating composite score from the above views \
-sinks to cloud storage
+sinks to cloud storage \
+
+![Screenshot](DAG.png)
