@@ -6,13 +6,13 @@ and per https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master
 and per https://www.udemy.com/gcp-data-engineer-and-cloud-architect/learn/v4/t/lecture/7598626?start=0 \
 \
 \
-...
+
 
 ### helpers.py
 `resolve_package_help_score()` assigns +1 if `fixme` or `todo` is found \
 `resolve_package_usage()` assigns if pkg is mentioned
 `calculate_composite_score()` combines the above \
-\
+
 ### pipeline.py
 defaults to dataflow deploy, `--local` for direct runner \
 pipeline logic resides in `create_pipeline()` \
