@@ -31,13 +31,21 @@ def resolve_packages(line, keyword):
 
    return []
 
-def resolve_package_usage(line, keyword):
+def resolve_package_usage(record, keyword):
+      
+  if record is not None:
+        
+        lines = record.split('\n')
 
-   packages = resolve_packages(line, keyword)
+        for line in lines: 
 
-   for p in packages:
+          if line.startswith(keyword):
+                
+                packages = resolve_packages(line, keyword)
 
-      yield (p, 1)
+                for each in packages:
+                      
+                      yield (each, 1)
 
 def compare_by_value(kv1, kv2):
 
