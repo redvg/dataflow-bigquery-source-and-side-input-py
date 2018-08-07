@@ -93,9 +93,6 @@ def calculate_composite_score(popular, help):
 
            yield (element[0], composite)
 
-
-from __future__ import absolute_import
-
 import argparse
 import logging
 import datetime, os
